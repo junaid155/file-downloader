@@ -1,0 +1,142 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="file-downloader">
+  <template>
+    <style include="shared-styles">
+       :host {
+        display: block;
+      }
+    </style>
+    <div id="container"></div>
+  </template>
+
+  <script>
+    /**
+     * `file-downloader`
+     * File downloader element
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class FileDownloader extends Polymer.Element {
+      static get is() { return 'file-downloader'; }
+
+      static get properties() {
+        return {
+          method: {
+            type: String,
+            value: 'post'
+          },
+          action: {
+            type: String,
+            value: "http://localhost:8081/download"
+          },
+          data: {
+            type: Array,
+            value: [
+              {
+                name: 'test', value: '123'
+              }
+            ]
+
+
+          }
+        };
+      }
+
+
+      /**
+       * Use for one-time configuration of your component after local DOM is initialized. 
+       */
+      ready() {
+        super.ready();
+
+        // When possible, use afterNextRender to defer non-critical
+        // work until after first paint.
+        Polymer.RenderStatus.afterNextRender(this, function () {
+          //this._createIFrame();
+        });
+
+      }
+
+      /**
+       * Creates form to submit downloading request.
+       */
+      _createForm() {
+        let form = document.createElement("form");
+        form.setAttribute('method', this.method);
+        form.setAttribute('action', this.action);
+
+        this._createFormElements(form);
+
+        return form;
+      }
+
+      _createFormElements(form) {
+        this._createHiddenElements(form);
+        this._createSubmitButton(form);
+      }
+
+      /**
+      * Creates hidden input elements which contains data.
+      */
+      _createHiddenElements(form) {
+
+        for (let i in this.data) {
+          let inputElement = document.createElement("input"); //input element, text
+          inputElement.setAttribute('type', "hidden");
+          inputElement.setAttribute('name', this.data[i].name);
+          inputElement.setAttribute('value', this.data[i].value);
+          form.appendChild(inputElement);
+        }
+      }
+
+      /**
+      * Creates submit button for downloading request.
+      */
+      _createSubmitButton(form) {
+
+        let submitButton = document.createElement("input");
+        submitButton.setAttribute('type', "submit");
+        submitButton.setAttribute('value', "Submit");
+        form.appendChild(submitButton);
+      }
+
+      /**
+      * Frame to contain form & submit request to allow page reload.
+      */
+      _createIFrame() {
+        this._removeIframe();
+        let iframe = document.createElement('iframe');
+        let html = '<body></body>';
+        iframe.src = 'data:text/html;charset=utf-8,' + encodeURI(html);
+        iframe.style.display = "none";
+        this.$.container.appendChild(iframe);
+        return iframe;
+
+      }
+
+      downloadFile() {
+
+        let iframe = this._createIFrame();
+        let form = this._createForm();
+        iframe.contentDocument.querySelector("body").appendChild(form);
+        form.submit();
+      }
+      _removeIframe() {
+ 
+          let iframes = this.$.container.querySelectorAll('iframe');
+          for (let i = 0; i < iframes.length; i++) {
+            iframes[i].parentNode.removeChild(iframes[i]);
+          }
+      }
+      _onSubmitFile() {
+        this._downloadFile();
+      }
+
+    }
+
+    window.customElements.define(FileDownloader.is, FileDownloader);
+  </script>
+</dom-module>
